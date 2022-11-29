@@ -149,15 +149,15 @@ func TestRunCommand(t *testing.T) {
 	out, err, code := RunCommandPrintOut(wd, "a", "b", "c", "d", "123", "'456 ")
 	assert.Equal(t, "ABC\nDEF\n\x33", out)
 	assert.Equal(t, "GHI\nJKL\n\x33", err)
-	assert.Equal(t, 123, code)
+	assert.Equal(t, 100, code)
 
 	out, err, code = RunCommandGetOutput(wd, "e", "f", "g", "h", "456", "'789 ")
 	assert.Equal(t, "MNO\nPQR\n\x33", out)
 	assert.Equal(t, "STU\nVWX\n\x33", err)
-	assert.Equal(t, 456, code)
+	assert.Equal(t, 101, code)
 
 	code = RunCommandGetStatus(wd, "i", "j", "k", "l", "789", "'012 ")
-	assert.Equal(t, 789, code)
+	assert.Equal(t, 102, code)
 
 	assert.True(t, IsCommandSuccess(wd, "m", "n", "o", "p", "012", "'345 "))
 
