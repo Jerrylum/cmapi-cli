@@ -768,6 +768,7 @@ var (
 
 func main() {
 	FixConsoleColor()
+	BeepSuccess()
 
 	if !CheckEnvironment() {
 		return
