@@ -51,7 +51,7 @@ func TestHelperMockExecute(t *testing.T) {
 	commandLine := strings.Join(os.Args[3:], " ")
 
 	if commandLine != expectedCommandLine || err != nil {
-		os.Exit(999)
+		os.Exit(127)
 		return
 	}
 
@@ -139,9 +139,9 @@ func TestRunCommand(t *testing.T) {
 	wd, _ := os.Getwd()
 
 	MockCommandsQueue = []CommandSpec{
-		{"a b c d 123 '456 ", "ABC\nDEF\n\x33", "GHI\nJKL\n\x33", 123},
-		{"e f g h 456 '789 ", "MNO\nPQR\n\x33", "STU\nVWX\n\x33", 456},
-		{"i j k l 789 '012 ", "YZA\nBCD\n\x33", "EFG\nHIJ\n\x33", 789},
+		{"a b c d 123 '456 ", "ABC\nDEF\n\x33", "GHI\nJKL\n\x33", 100},
+		{"e f g h 456 '789 ", "MNO\nPQR\n\x33", "STU\nVWX\n\x33", 101},
+		{"i j k l 789 '012 ", "YZA\nBCD\n\x33", "EFG\nHIJ\n\x33", 102},
 		{"m n o p 012 '345 ", "KLM\nNOP\n\x33", "QRS\nTUV\n\x33", 0},
 		{"q r s t", "", "", 1},
 	}
