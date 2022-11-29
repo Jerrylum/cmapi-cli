@@ -65,24 +65,24 @@ func WriteJson(filename string, input map[string]string) bool {
 
 // SetupSecret read the secret from the file and update it if needed
 func SetupSecret() bool {
-	secretFilePath = filepath.Join(adminDir, ".cmapi-cli-secret.json")
+	SecretFilePath = filepath.Join(AdminDir, ".cmapi-cli-secret.json")
 
-	if _, err := os.Stat(secretFilePath); os.IsNotExist(err) {
+	if _, err := os.Stat(SecretFilePath); os.IsNotExist(err) {
 		user, _ := user.Current()
-		SetDefaultSecret(user, secret)
-		WriteJson(secretFilePath, secret)
+		SetDefaultSecret(user, Secret)
+		WriteJson(SecretFilePath, Secret)
 	}
 
-	secretFromFile := ReadJson(secretFilePath)
+	secretFromFile := ReadJson(SecretFilePath)
 	if secretFromFile == nil {
 		return Fail(126)
 	}
 
-	if UpdateFileSecret(secret, secretFromFile) {
-		WriteJson(secretFilePath, secretFromFile)
+	if UpdateFileSecret(Secret, secretFromFile) {
+		WriteJson(SecretFilePath, secretFromFile)
 		fmt.Println(Yellow("Secret file updated."))
 	}
-	secret = secretFromFile
+	Secret = secretFromFile
 
 	return true
 }
@@ -131,7 +131,7 @@ func RunCommand(cmd *exec.Cmd) int {
 // https://stackoverflow.com/questions/1312922/detect-if-stdin-is-a-terminal-or-pipe
 // https://stackoverflow.com/questions/1401002/how-to-trick-an-application-into-thinking-its-stdout-is-a-terminal-not-a-pipe
 func RunCommandPrintOut(workingDir string, name string, arg ...string) (string, string, int) {
-	cmd := exec.Command(name, arg...)
+	cmd := ExecCommand(name, arg...)
 	cmd.Dir = workingDir
 
 	var stdoutBuf, stderrBuf bytes.Buffer
@@ -147,7 +147,7 @@ func RunCommandPrintOut(workingDir string, name string, arg ...string) (string, 
 // RunCommandGetOutput runs a command and returns the output, error and exit code
 // The output is not printed
 func RunCommandGetOutput(workingDir string, name string, arg ...string) (string, string, int) {
-	cmd := exec.Command(name, arg...)
+	cmd := ExecCommand(name, arg...)
 	cmd.Dir = workingDir
 
 	var stdoutBuf, stderrBuf bytes.Buffer
@@ -164,7 +164,7 @@ func RunCommandGetOutput(workingDir string, name string, arg ...string) (string,
 // RunCommandGetStatus runs a command and returns the exit code
 // The output is not printed
 func RunCommandGetStatus(workingDir string, name string, arg ...string) int {
-	cmd := exec.Command(name, arg...)
+	cmd := ExecCommand(name, arg...)
 	cmd.Dir = workingDir
 
 	cmd.Stdout = os.Stdout
@@ -196,8 +196,8 @@ func CheckEnvironment() bool {
 		return Fail(127)
 	}
 
-	adminDir = filepath.Join(user.HomeDir, ".cmapi-cli")
-	if os.MkdirAll(adminDir, os.ModePerm) != nil {
+	AdminDir = filepath.Join(user.HomeDir, ".cmapi-cli")
+	if os.MkdirAll(AdminDir, os.ModePerm) != nil {
 		return Fail(128)
 	}
 
@@ -205,7 +205,7 @@ func CheckEnvironment() bool {
 	if err != nil {
 		return Fail(129)
 	}
-	workingDir = wd
+	WorkingDir = wd
 
 	return true
 }
@@ -222,14 +222,10 @@ func IsProsProject(projectRoot string) bool {
 	return !os.IsNotExist(err)
 }
 
-// Returns true if the given label is valid
-// No side effect
-var IsValidLabel = regexp.MustCompile(`^[A-Z0-9\-]+$`).MatchString
-
 // GetRepoUrl returns the repo url of the given repository.
 func GetRepoUrl(repoSlug string) string {
-	return "https://" + secret["username"] + ":" + secret["password"] + "@bitbucket.org/" +
-		secret["workspace"] + "/" + repoSlug + ".git"
+	return "https://" + Secret["username"] + ":" + Secret["password"] + "@bitbucket.org/" +
+		Secret["workspace"] + "/" + repoSlug + ".git"
 }
 
 func LinkLocalRepoToServerCommand(projectRoot string, repoSlug string) bool {
@@ -253,13 +249,13 @@ func LinkLocalRepoToServerCommand(projectRoot string, repoSlug string) bool {
 		return Fail(103)
 	}
 
-	if !IsCommandSuccess(projectRoot, "git", "config", "user.name", secret["computer-name"]) ||
-		!IsCommandSuccess(projectRoot, "git", "config", "user.email", secret["email"]) ||
+	if !IsCommandSuccess(projectRoot, "git", "config", "user.name", Secret["computer-name"]) ||
+		!IsCommandSuccess(projectRoot, "git", "config", "user.email", Secret["email"]) ||
 		!IsCommandSuccess(projectRoot, "git", "config", "commit.gpgsign", "false") {
 		return Fail(104)
 	}
 
-	return Success("Linked '%s' -> 'https://bitbucket.org/%s'.", projectRoot, secret["workspace"]+"/"+repoSlug)
+	return Success("Linked '%s' -> 'https://bitbucket.org/%s'.", projectRoot, Secret["workspace"]+"/"+repoSlug)
 }
 
 // BackupCommand backs up the project to the server
@@ -356,7 +352,7 @@ func PullCommand(projectRoot string) bool {
 }
 
 func CloneRepositoryCommand(label string, workspaceDir string, kernel string, noPull bool) bool {
-	projectRootName := secret["repo-slug-prefix"] + label
+	projectRootName := Secret["repo-slug-prefix"] + label
 	repoSlug := strings.ToLower(projectRootName)
 	projectRoot := filepath.Join(workspaceDir, projectRootName)
 
@@ -372,19 +368,19 @@ func CloneRepositoryCommand(label string, workspaceDir string, kernel string, no
 	}
 
 	if InitProsProjectAndApplyKernel(projectRoot, kernel, noPull) {
-		return Success("Cloned 'https://bitbucket.org/%s' -> '%s'.", secret["workspace"]+"/"+repoSlug, projectRoot)
+		return Success("Cloned 'https://bitbucket.org/%s' -> '%s'.", Secret["workspace"]+"/"+repoSlug, projectRoot)
 	} else {
 		return false
 	}
 }
 
 func CreateRepositoryCommand(label string, workspaceDir string, kernel string, noPull bool, isLocal bool) bool {
-	templateRepoSlug := strings.ToLower(secret["template-repo"])
-	templateRoot := filepath.Join(adminDir, templateRepoSlug)
+	templateRepoSlug := strings.ToLower(Secret["template-repo"])
+	templateRoot := filepath.Join(AdminDir, templateRepoSlug)
 
 	if !noPull {
 		if !IsGitRepo(templateRoot) {
-			if !IsCommandSuccess(adminDir, "git", "clone", GetRepoUrl(templateRepoSlug), templateRepoSlug) {
+			if !IsCommandSuccess(AdminDir, "git", "clone", GetRepoUrl(templateRepoSlug), templateRepoSlug) {
 				return Fail(115)
 			}
 		} else {
@@ -403,7 +399,7 @@ func CreateRepositoryCommand(label string, workspaceDir string, kernel string, n
 		return Fail(117, templateRoot)
 	}
 
-	projectRootName := secret["repo-slug-prefix"] + label
+	projectRootName := Secret["repo-slug-prefix"] + label
 	projectSlug := strings.ToLower(projectRootName)
 	projectRoot := filepath.Join(workspaceDir, projectRootName)
 
@@ -455,7 +451,7 @@ func CreateRepositoryCommand(label string, workspaceDir string, kernel string, n
 func ListSecretsCommand() bool {
 	fmt.Println(Yellow("Listing secrets..."))
 
-	for key, value := range secret {
+	for key, value := range Secret {
 		fmt.Println(Yellow(key+": ") + value)
 	}
 
@@ -463,11 +459,11 @@ func ListSecretsCommand() bool {
 }
 
 func SetSecretCommand(key string, value string) bool {
-	if _, ok := secret[key]; !ok {
+	if _, ok := Secret[key]; !ok {
 		return Fail(130, key)
 	} else {
-		secret[key] = value
-		WriteJson(secretFilePath, secret)
+		Secret[key] = value
+		WriteJson(SecretFilePath, Secret)
 		return true
 	}
 }
@@ -511,17 +507,17 @@ func InitProsProjectAndApplyKernel(projectRoot string, kernel string, noPull boo
 
 // CreateRemoteRepo creates a remote repo on the BitBucket server, requires label with no spaces
 func CreateRemoteRepo(label string) (string, error) {
-	projectRootName := secret["repo-slug-prefix"] + label
+	projectRootName := Secret["repo-slug-prefix"] + label
 	repoSlug := strings.ToLower(projectRootName)
 
-	url := "https://api.bitbucket.org/2.0/repositories/" + secret["workspace"] + "/" + repoSlug
+	url := "https://api.bitbucket.org/2.0/repositories/" + Secret["workspace"] + "/" + repoSlug
 	method := "POST"
 	payload := strings.NewReader(`{
         "scm": "git",
         "project": {
-            "key": "` + secret["project"] + `"
+            "key": "` + Secret["project"] + `"
         },
-        "name": "` + secret["repo-name-prefix"] + label + `",
+        "name": "` + Secret["repo-name-prefix"] + label + `",
         "language": "c++",
         "is_private": true
     }`)
@@ -533,7 +529,7 @@ func CreateRemoteRepo(label string) (string, error) {
 		return "", err
 	}
 
-	auth := base64.StdEncoding.EncodeToString([]byte(secret["username"] + ":" + secret["password"]))
+	auth := base64.StdEncoding.EncodeToString([]byte(Secret["username"] + ":" + Secret["password"]))
 	req.Header.Add("Authorization", "Basic "+auth)
 	req.Header.Add("Content-Type", "application/json")
 
@@ -560,8 +556,8 @@ func HandleCommand(command string, args []string) bool {
 	var localFlag bool
 	var noPullFlag bool
 	var slotFlag int
-	fs.StringVar(&workspaceDir, "d", secret["workspace-dir"], "")
-	fs.StringVar(&workspaceDir, "directory", secret["workspace-dir"], "")
+	fs.StringVar(&workspaceDir, "d", Secret["workspace-dir"], "")
+	fs.StringVar(&workspaceDir, "directory", Secret["workspace-dir"], "")
 	fs.BoolVar(&forceFlag, "f", false, "")
 	fs.BoolVar(&forceFlag, "force", false, "")
 	fs.StringVar(&kernelVer, "k", "latest", "")
@@ -576,21 +572,21 @@ func HandleCommand(command string, args []string) bool {
 	fs.Parse(args)
 
 	if command == "all" {
-		CompileCommand(workingDir, true, slotFlag)
+		CompileCommand(WorkingDir, true, slotFlag)
 	} else if command == "backup" {
-		BackupCommand(workingDir)
+		BackupCommand(WorkingDir)
 	} else if command == "init" {
-		InitProjectCommand(workingDir, kernelVer, forceFlag, noPullFlag)
+		InitProjectCommand(WorkingDir, kernelVer, forceFlag, noPullFlag)
 	} else if command == "link" {
-		repoSlug := filepath.Base(workingDir)
+		repoSlug := filepath.Base(WorkingDir)
 		if len(fs.Args()) > 0 {
 			repoSlug = fs.Arg(0)
 		}
-		LinkLocalRepoToServerCommand(workingDir, repoSlug)
+		LinkLocalRepoToServerCommand(WorkingDir, repoSlug)
 	} else if command == "normal" {
-		CompileCommand(workingDir, false, slotFlag)
+		CompileCommand(WorkingDir, false, slotFlag)
 	} else if command == "pull" {
-		PullCommand(workingDir)
+		PullCommand(WorkingDir)
 	} else if command == "clone" {
 		label := fs.Arg(0)
 		if !IsValidLabel(label) {
@@ -733,11 +729,18 @@ Options:
                                 in the brain. [default: 1, range: 1-8]
 `
 
+// Returns true if the given label is valid
+// No side effect
 var (
-	adminDir       string
-	workingDir     string
-	secretFilePath string
-	secret         = map[string]string{
+	ExecCommand  = exec.Command
+	IsValidLabel = regexp.MustCompile(`^[A-Z0-9\-]+$`).MatchString
+)
+
+var (
+	AdminDir       string
+	WorkingDir     string
+	SecretFilePath string
+	Secret         = map[string]string{
 		"computer-name":    "unknown",
 		"email":            "cmass-robotics-team-bot@proton.me",
 		"username":         "cmass-robotics-team-bot",
