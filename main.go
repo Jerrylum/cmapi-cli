@@ -367,11 +367,17 @@ func CloneRepositoryCommand(label string, workspaceDir string, kernel string, no
 		return Fail(114)
 	}
 
-	if InitProsProjectAndApplyKernel(projectRoot, kernel, noPull) {
-		return Success("Cloned 'https://bitbucket.org/%s' -> '%s'.", Secret["workspace"]+"/"+repoSlug, projectRoot)
-	} else {
+	if !InitProsProjectAndApplyKernel(projectRoot, kernel, noPull) {
 		return false
 	}
+
+	// No matter what, we reset the repository
+	// Apply the kernel to the project without overwriting any existing files.
+	if !IsCommandSuccess(projectRoot, "git", "reset", "--hard") {
+		return Fail(131)
+	}
+
+	return Success("Cloned 'https://bitbucket.org/%s' -> '%s'.", Secret["workspace"]+"/"+repoSlug, projectRoot)
 }
 
 func CreateRepositoryCommand(label string, workspaceDir string, kernel string, noPull bool, isLocal bool) bool {
@@ -675,6 +681,7 @@ var ErrorCode = map[int]string{
 	128: "Failed to access the administrator directory.",
 	129: "Failed to get working directory.",
 	130: "Secret key '%s' does not exist.",
+	131: "Failed to reset to the latest commit.",
 	200: "Invalid label, only capital letters, digits and hyphens are accepted.",
 	300: "Failed to parse command line.",
 	301: "Unknown command '%s'.",
