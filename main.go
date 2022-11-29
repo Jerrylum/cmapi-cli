@@ -727,7 +727,8 @@ Options:
     -np, --no-pull              Do not pull template changes/kernel online.
     -s,  --slot <SLOT>          Upload the binary to a specified program slot
                                 in the brain. [default: 1, range: 1-8]
-`
+
+Version: 0.1.0`
 
 // Returns true if the given label is valid
 // No side effect
