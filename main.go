@@ -709,11 +709,11 @@ Commands for project action:
         Pull changes from the remote server to the local repository.
 
 Commands for repository management:
-    clone <LABEL> [--directory <PATH>] [--kernel <VERSION>] [--no-pull]
+    clone [--directory <PATH>] [--kernel <VERSION>] [--no-pull] <LABEL>
         1. Clone a repository from the server to the local machine.
         2. Initialize the PROS project.
-    create <LABEL> [--directory <PATH>] [--kernel <VERSION>] [--no-pull]
-        [--local]
+    create [--directory <PATH>] [--kernel <VERSION>] [--no-pull] [--local]
+        <LABEL>
         1. Create a repository on the local machine. The label should be all
         caps and contain no spaces.
         2. Fork all contents from the template repository.
