@@ -348,8 +348,7 @@ func PullCommand(projectRoot string) bool {
 		return Fail(102)
 	}
 
-	// For some magic reasons, do not print the output of the git pull command or it will break color codes
-	if _, _, code := RunCommandGetOutput(projectRoot, "git", "pull", "origin", "master"); code != 0 {
+	if !IsCommandSuccess(projectRoot, "git", "pull", "origin", "master") {
 		return Fail(112)
 	}
 
