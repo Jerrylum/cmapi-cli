@@ -35,8 +35,7 @@ func Beep(freq float64, duration int) error {
 
 	defer syscall.FreeLibrary(kernel32)
 
-	_, _, e := syscall.SyscallN(uintptr(beep32), uintptr(2), uintptr(int(freq)), uintptr(duration), 0)
-	// _, _, e := syscall.Syscall(uintptr(beep32), uintptr(2), uintptr(int(freq)), uintptr(duration), 0)
+	_, _, e := syscall.Syscall(uintptr(beep32), uintptr(2), uintptr(int(freq)), uintptr(duration), 0)
 	if e != 0 {
 		return e
 	}
