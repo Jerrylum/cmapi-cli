@@ -23,6 +23,18 @@ import (
 	cp "github.com/otiai10/copy"
 )
 
+// Contains checks if a string is in a string array
+// No side effect
+func Contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+
+	return false
+}
+
 // ReadJson reads a json file and returns a string map.
 // No side effect
 func ReadJson(filename string) map[string]string {
@@ -182,32 +194,51 @@ func IsCommandSuccess(workingDir string, name string, arg ...string) bool {
 	return RunCommandGetStatus(workingDir, name, arg...) == 0
 }
 
-// CheckEnvironment checks if the environment is set up correctly.
-func CheckEnvironment() bool {
+// SetupEnvironment checks if the environment is set up correctly.
+func SetupEnvironment() bool {
+	success := true
+
+	usr, err := user.Current()
+	if err != nil {
+		return Fail(127) // critical failure
+	}
+
+	if runtime.GOOS == "linux" {
+		ids, err := usr.GroupIds()
+		if err != nil {
+			return Fail(127) // critical failure
+		}
+
+		dialoutGroup, err := user.LookupGroup("dialout")
+		// if the group exists and the user is not in it
+		if err == nil && !Contains(ids, dialoutGroup.Gid) {
+			success = Fail(133)
+		}
+	}
+
 	if _, err := exec.LookPath("git"); err != nil {
-		return Fail(100)
+		success = Fail(100)
 	}
 	if _, err := exec.LookPath("pros"); err != nil {
-		return Fail(101)
+		success = Fail(101)
 	}
 
-	user, err := user.Current()
-	if err != nil {
-		return Fail(127)
+	if _, ok := os.LookupEnv("PROS_TOOLCHAIN"); !ok {
+		success = Fail(132)
 	}
 
-	AdminDir = filepath.Join(user.HomeDir, ".cmapi-cli")
+	AdminDir = filepath.Join(usr.HomeDir, ".cmapi-cli")
 	if os.MkdirAll(AdminDir, os.ModePerm) != nil {
-		return Fail(128)
+		success = Fail(128)
 	}
 
 	wd, err := os.Getwd()
 	if err != nil {
-		return Fail(129)
+		success = Fail(129)
 	}
 	WorkingDir = wd
 
-	return true
+	return success // return true if and only if all checks passed
 }
 
 // Returns true if the given path is a Git repository.
@@ -682,6 +713,8 @@ var ErrorCode = map[int]string{
 	129: "Failed to get working directory.",
 	130: "Secret key '%s' does not exist.",
 	131: "Failed to reset to the latest commit.",
+	132: "'PROS_TOOLCHAIN' environment variable is not defined.",
+	133: "User should be in the 'dialout' group.",
 	200: "Invalid label, only capital letters, digits and hyphens are accepted.",
 	300: "Failed to parse command line.",
 	301: "Unknown command '%s'.",
@@ -770,11 +803,17 @@ func main() {
 	FixConsoleColor()
 	BeepSuccess()
 
-	if !CheckEnvironment() {
+	var force bool
+	fs := flag.NewFlagSet("Startup", flag.ContinueOnError)
+	fs.BoolVar(&force, "f", false, "")
+	fs.BoolVar(&force, "force", false, "")
+	fs.Parse(os.Args[1:])
+
+	if !SetupEnvironment() && !force {
 		return
 	}
 
-	if !SetupSecret() {
+	if !SetupSecret() && !force {
 		return
 	}
 

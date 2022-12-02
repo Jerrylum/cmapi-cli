@@ -94,6 +94,11 @@ You need to set PROS_TOOLCHAIN Environment Variable to the location of the toolc
 
 First, download the most recent build for your OS from the releases page. Then, rename the file to `cmapi-cli`. Now, put the executable in a folder that is in your PATH environment variable or add the folder to your PATH environment variable.
 
+On Linux, you also need to add yourself to the `dialout` group before you can upload to the V5 Brain. You then need to log out and log back in for the changes to take effect.
+
+```bash
+sudo usermod -a -G dialout $USER
+```
 
 ## Run From Source
 
