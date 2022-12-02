@@ -35,6 +35,7 @@ func Beep(freq float64, duration int) error {
 
 	defer syscall.FreeLibrary(kernel32)
 
+	// IMPORTANT: IGNORE 'deprecated' WARNING; DO NOT OPTIMIZE THIS CODE
 	_, _, e := syscall.Syscall(uintptr(beep32), uintptr(2), uintptr(int(freq)), uintptr(duration), 0)
 	if e != 0 {
 		return e
