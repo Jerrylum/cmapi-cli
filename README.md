@@ -48,49 +48,94 @@ VS Marketplace Link: https://marketplace.visualstudio.com/items?itemName=sigbots
 
 Click `Install PROS` in the PROS tab.
 
-### 5. Add PROS-CLI to PATH
+### 5. Install CMAPI-CLI
 
-The PROS-CLI should be installed at the following location by the extension:
+First, download the most recent build for your OS from the releases page.
+
+https://github.com/Jerrylum/cmapi-cli/releases/latest
+
+If you are on Windows, after you download the latest version, you need to create a folder named `cmapi-application` in your home directory. Then, move the downloaded file to the `cmapi-application` folder and rename it to `cmapi-cli.exe`.
+
+If you are on MacOS or Linux, you can follow the instructions below to install the latest version.
+
+```bash
+# Download the latest version into the current directory
+wget https://github.com/Jerrylum/cmapi-cli/releases/download/XXX/cmapi-cli-YYY
+
+mkdir ~/cmapi-application
+
+chmod +x cmapi-cli-*
+
+mv cmapi-cli-* ~/cmapi-application/cmapi-cli
+```
+
+### 6. Put Everything Together
+
+The PROS-CLI and toolchain should be installed at the following location by the extension. You need to add the following paths to your PATH environment variable.
 
 ```
 On Windows:
 %APPDATA%\Code\User\globalStorage\sigbots.pros\install\pros-cli-windows
+%APPDATA%\Code\User\globalStorage\sigbots.pros\install\pros-toolchain-windows\usr
+%USERPROFILE%\cmapi-application
+
+On MacOS:
+~/Library/Application\ Support/Code/User/globalStorage/sigbots.pros/install/pros-cli-macos
+~/Library/Application\ Support/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-macos/usr
+~/cmapi-application
 
 On Linux:
 ~/.config/Code/User/globalStorage/sigbots.pros/install/pros-cli-linux
+~/.config/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-linux/usr
+~/cmapi-application
 ```
 
-You need to add it to your PATH manually.
+#### On Windows
 
-On Windows: https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/
+You need to add them to your PATH manually. Please pay a visit to the following website:
 
-On Linux: https://stackoverflow.com/questions/14637979/how-to-permanently-set-path-on-linux-unix
+https://gist.github.com/nex3/c395b2f8fd4b02068be37c961301caa7
 
-However, if you are using Linux, the PROS-CLI installed by the extension might only work with the extension but not on the terminal (SSL issue). Therefore, It is recommended to install the PROS-CLI manually using pip.
+https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/
+
+https://stackoverflow.com/questions/14637979/how-to-permanently-set-path-on-linux-unix
+
+#### On MacOS
+
+Run `nano ~/.zshrc` to open the `.zshrc` file. Add the following lines to the end of the file:
+
+```
+export PATH="$HOME/Library/Application Support/Code/User/globalStorage/sigbots.pros/install/pros-cli-macos":$PATH
+export PROS_TOOLCHAIN="$HOME/Library/Application Support/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-macos/usr"
+export PATH="$HOME/cmapi-application:$PATH"
+```
+
+Then, save the file with `Ctrl+O`, `enter`, and exit with `Ctrl+X`.
+
+#### On Linux
+
+Run `nano ~/.bashrc` to open the `.bashrc` file. Add the following lines to the end of the file:
+
+```
+export PATH="$HOME/.config/Code/User/globalStorage/sigbots.pros/install/pros-cli-linux":$PATH
+export PROS_TOOLCHAIN="$HOME/.config/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-linux/usr"
+export PATH="$HOME/cmapi-application:$PATH"
+```
+
+Then, save the file with `Ctrl+O`, `enter`, and exit with `Ctrl+X`.
+
+Make sure you know what is your default shell of your terminal. You need to modify the `.bashrc` file if you are using bash, or modify the `.zshrc` file if you are using zsh.
+
+### 7. One More Thing on Linux
+
+If you are using Linux, the PROS-CLI installed by the extension might only work with the extension but not on the terminal (SSL issue). Therefore, It is recommended to install the PROS-CLI manually using pip.
 
 ```bash
 pip3 install pros-cli
 
+# To check if it is installed successfully
 which pros
 ```
-
-### 6. Set PROS_TOOLCHAIN Environment Variable
-
-The toolchain should be installed at the following location by the extension:
-
-```
-On Windows:
-%APPDATA%\Code\User\globalStorage\sigbots.pros\install\pros-toolchain-windows\usr
-
-On Linux:
-~/.config/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-linux/usr
-```
-
-You need to set PROS_TOOLCHAIN Environment Variable to the location of the toolchain. It is similar to adding the CLI to the PATH environment variable.
-
-### 7. Install CMAPI-CLI
-
-First, download the most recent build for your OS from the releases page. Then, rename the file to `cmapi-cli`. Now, put the executable in a folder that is in your PATH environment variable or add the folder to your PATH environment variable.
 
 On Linux, you also need to add yourself to the `dialout` group before you can upload to the V5 Brain. You then need to log out and log back in for the changes to take effect.
 
