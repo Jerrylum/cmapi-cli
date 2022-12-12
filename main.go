@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
@@ -797,6 +796,7 @@ var (
 	// Codes from github.com/gen2brain/beeep
 	// ErrUnsupported is returned when operating system is not supported.
 	ErrUnsupported = errors.New("beeep: unsupported operating system: " + runtime.GOOS)
+	ErrNoData      = errors.New("No data")
 )
 
 func main() {
@@ -821,10 +821,16 @@ func main() {
 	fmt.Println(Yellow("Use 'help' to see all commands."))
 
 	lastCommandLine := "normal"
+	reader := NonBlockingReader{}
+	reader.New()
 	for {
-		reader := bufio.NewReader(os.Stdin)
+		for {
+			if _, err := reader.NonBlockingRead(); err == ErrNoData {
+				break
+			}
+		}
 		fmt.Print(Yellow("\n> "))
-		rawText, _ := reader.ReadString('\n')
+		rawText, _ := reader.BlockingRead()
 
 		if len(rawText) == 0 { // EOF
 			break
