@@ -335,7 +335,7 @@ func CompileCommand(projectRoot string, all bool, slot int) bool {
 
 	fmt.Println(Yellow("Starting to upload"))
 
-	if !IsCommandSuccess(projectRoot, "pros", "upload", "--execute", "--slot", strconv.Itoa(slot)) {
+	if !IsCommandSuccess(projectRoot, "pros", "upload", "--after", "run", "--slot", strconv.Itoa(slot)) {
 		BeepFail()
 		return Fail(108)
 	}
