@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"container/list"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -125,6 +126,17 @@ func UpdateFileSecret(secret map[string]string, fileSecret map[string]string) bo
 
 // RunCommand runs a command and returns the exit code.
 func RunCommand(cmd *exec.Cmd) int {
+	RunningCommands.PushBack(cmd)
+
+	defer func() {
+		for e := RunningCommands.Front(); e != nil; e = e.Next() {
+			if e.Value == cmd {
+				RunningCommands.Remove(e)
+				break
+			}
+		}
+	}()
+
 	err := cmd.Run()
 	if err != nil {
 		if exit_err, ok := err.(*exec.ExitError); ok {
@@ -173,7 +185,7 @@ func RunCommandGetOutput(workingDir string, name string, arg ...string) (string,
 }
 
 // RunCommandGetStatus runs a command and returns the exit code
-// The output is not printed
+// The output is printed
 func RunCommandGetStatus(workingDir string, name string, arg ...string) int {
 	cmd := ExecCommand(name, arg...)
 	cmd.Dir = workingDir
@@ -793,6 +805,7 @@ var (
 		"repo-slug-prefix": "7984-",
 		"repo-name-prefix": "7984 - ",
 	}
+	RunningCommands = list.New()
 
 	// Codes from github.com/gen2brain/beeep
 	// ErrUnsupported is returned when operating system is not supported.
@@ -824,6 +837,12 @@ func main() {
 	lastCommandLine := "normal"
 	reader := NonBlockingReader{}
 	reader.New()
+	reader.errFunc = func(err error) {
+		for e := RunningCommands.Front(); e != nil; e = e.Next() {
+			e.Value.(*exec.Cmd).Process.Kill()
+		}
+		os.Exit(0)
+	}
 	for {
 		for {
 			if _, err := reader.NonBlockingRead(); err == ErrNoData {

@@ -12,6 +12,7 @@ type NonBlockingReader struct {
 	ctrl     chan bool
 	prompt   string
 	sentinal byte
+	errFunc  func(error)
 }
 
 func (r *NonBlockingReader) New() {
@@ -19,6 +20,7 @@ func (r *NonBlockingReader) New() {
 	r.ctrl = make(chan bool)
 	r.data = make(chan string)
 	r.sentinal = '\n'
+	r.errFunc = func(err error) {}
 
 	go r.readLine()
 }
@@ -63,6 +65,7 @@ func (r *NonBlockingReader) readLine() {
 		default:
 			s, err := reader.ReadString(r.sentinal)
 			if err != nil {
+				go r.errFunc(err)
 				r.err <- err
 			} else {
 				r.data <- s
