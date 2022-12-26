@@ -308,7 +308,7 @@ func BackupCommand(projectRoot string) bool {
 
 func CompileCommand(projectRoot string, all bool, slot int) bool {
 	if !IsProsProject(projectRoot) {
-		return Fail(102)
+		return Fail(134)
 	}
 
 	fmt.Println(Yellow("------------------ Make Project ------------------"))
@@ -714,6 +714,7 @@ var ErrorCode = map[int]string{
 	131: "Failed to reset to the latest commit.",
 	132: "'PROS_TOOLCHAIN' environment variable is not defined.",
 	133: "User should be in the 'dialout' group.",
+	134: "Not a PROS project, use command 'init' to initialize it.",
 	200: "Invalid label, only capital letters, digits and hyphens are accepted.",
 	300: "Failed to parse command line.",
 	301: "Unknown command '%s'.",
