@@ -810,7 +810,7 @@ var (
 	// Codes from github.com/gen2brain/beeep
 	// ErrUnsupported is returned when operating system is not supported.
 	ErrUnsupported = errors.New("beeep: unsupported operating system: " + runtime.GOOS)
-	ErrNoData      = errors.New("No data")
+	ErrNoData      = errors.New("no data")
 )
 
 func main() {

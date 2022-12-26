@@ -10,7 +10,6 @@ type NonBlockingReader struct {
 	err      chan error
 	data     chan string
 	ctrl     chan bool
-	prompt   string
 	sentinal byte
 	errFunc  func(error)
 }
