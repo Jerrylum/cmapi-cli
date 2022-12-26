@@ -81,7 +81,7 @@ On Windows:
 
 On MacOS:
 ~/Library/Application\ Support/Code/User/globalStorage/sigbots.pros/install/pros-cli-macos
-~/Library/Application\ Support/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-macos/usr
+~/Library/Application\ Support/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-macos
 ~/cmapi-application
 
 On Linux:
@@ -106,7 +106,7 @@ Run `nano ~/.zshrc` to open the `.zshrc` file. Add the following lines to the en
 
 ```
 export PATH="$HOME/Library/Application Support/Code/User/globalStorage/sigbots.pros/install/pros-cli-macos":$PATH
-export PROS_TOOLCHAIN="$HOME/Library/Application Support/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-macos/usr"
+export PROS_TOOLCHAIN="$HOME/Library/Application Support/Code/User/globalStorage/sigbots.pros/install/pros-toolchain-macos"
 export PATH="$HOME/cmapi-application:$PATH"
 ```
 
