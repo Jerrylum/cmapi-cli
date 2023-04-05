@@ -365,6 +365,10 @@ func InitProjectCommand(projectRoot string, kernel string, force bool, noPull bo
 		return false
 	}
 
+	if !IsCommandSuccess(projectRoot, "git", "config", "commit.gpgsign", "false") {
+		return Fail(104)
+	}
+
 	if !IsCommandSuccess(projectRoot, "git", "add", "-A") ||
 		!IsCommandSuccess(projectRoot, "git", "commit", "--allow-empty", "-m", "Apply PROS kernel") {
 		return Fail(110)
