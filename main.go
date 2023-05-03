@@ -347,13 +347,18 @@ func CompileCommand(projectRoot string, all bool, slot int) bool {
 
 	fmt.Println(Yellow("Starting to upload"))
 
-	if !IsCommandSuccess(projectRoot, "pros", "upload", "--after", "run", "--slot", strconv.Itoa(slot)) {
-		BeepFail()
-		return Fail(108)
+	for i := 0; i < 3; i++ {
+		if i != 0 {
+			fmt.Printf(Yellow("Upload failed, retrying... (%d/2)\n"), i)
+		}
+		if IsCommandSuccess(projectRoot, "pros", "upload", "--after", "run", "--slot", strconv.Itoa(slot)) {
+			BeepSuccess()
+			return true
+		}
 	}
 
-	BeepSuccess()
-	return true
+	BeepFail()
+	return Fail(108)
 }
 
 func InitProjectCommand(projectRoot string, kernel string, force bool, noPull bool) bool {
