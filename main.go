@@ -339,7 +339,7 @@ func CompileCommand(projectRoot string, all bool, slot int) bool {
 
 	for {
 		info, _, _ := RunCommandGetOutput(projectRoot, "pros", "lsusb", "--target", "v5")
-		if strings.Contains(info, " - VEX ") {
+		if strings.Contains(info, " - ") {
 			break
 		}
 		fmt.Println(Yellow("V5 product not found, retrying..."))
